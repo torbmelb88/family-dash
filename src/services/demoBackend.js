@@ -22,8 +22,13 @@ function demoRequestedInUrl() {
     }
 }
 
+// Bygg satt opp med VITE_FORCE_DEMO=1 (f.eks. GitHub Pages-demoen) starter
+// rett i demo-modus uten innlogging.
+const DEMO_FORCED = import.meta.env.VITE_FORCE_DEMO === '1';
+
 // Demo kan aktiveres via «Prøv demo»-knappen (localStorage) eller direkte med ?demo=1 i URL-en.
 export function demoActivated() {
+    if (DEMO_FORCED) return true;
     if (demoRequestedInUrl()) {
         try {
             localStorage.setItem(DEMO_STORAGE_KEY, '1');

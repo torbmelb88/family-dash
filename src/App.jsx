@@ -19,7 +19,7 @@ function App() {
   }, [i18n.language]);
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />

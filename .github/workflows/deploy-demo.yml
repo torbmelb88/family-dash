@@ -1,0 +1,59 @@
+# Bygger og publiserer den offentlige demoen til GitHub Pages.
+# Bygget kjører uten Firebase-konfigurasjon og med VITE_FORCE_DEMO=1,
+# slik at appen starter rett i demo-modus med syntetiske data.
+name: Deploy demo til GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer avhengigheter
+        run: npm ci
+
+      - name: Bygg i demo-modus
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /family-dash/
+          VITE_FORCE_DEMO: '1'
+
+      # GitHub Pages serverer 404.html for ukjente stier; en kopi av index.html
+      # lar React Router ta over slik at direktelenker (f.eks. /shopping-list) fungerer.
+      - name: SPA-fallback for client-side routing
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

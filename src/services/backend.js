@@ -17,7 +17,7 @@ export function enableDemo() {
     } catch {
         // localStorage utilgjengelig — demo virker likevel så lenge Firebase ikke er konfigurert
     }
-    window.location.assign('/');
+    window.location.assign(import.meta.env.BASE_URL);
 }
 
 const fs = isDemo ? demoBackend : firestoreSdk;

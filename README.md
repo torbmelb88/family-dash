@@ -1,5 +1,7 @@
 # Family Dash
 
+> **▶ [Prøv live-demoen](https://torbmelb88.github.io/family-dash/)** — kjører i demo-modus med en fiktiv familie og syntetiske data. Ingen innlogging, og ingenting du gjør lagres.
+
 Et delt dashboard for familien: planlegg ukens middager, hold handlelisten oppdatert i sanntid og kryss av felles gjøremål — på mobil, nettbrett og desktop.
 
 ![Dashboard med ukens middagsplan](docs/screenshots/dashboard.png)
@@ -70,3 +72,7 @@ src/
 ├── services/     # backend-fasade, Firebase-init, demo-backend, Unsplash-klient
 └── utils/        # Dato-hjelpere, oppskriftsparser
 ```
+
+## Lisens
+
+[MIT](LICENSE)
