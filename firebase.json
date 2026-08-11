@@ -15,5 +15,11 @@
     },
     "firestore": {
         "rules": "firestore.rules"
-    }
+    },
+    "functions": [
+        {
+            "source": "mcp-server",
+            "codebase": "mcp"
+        }
+    ]
 }

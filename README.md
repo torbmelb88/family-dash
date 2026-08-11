@@ -16,6 +16,7 @@ Et delt dashboard for familien: planlegg ukens middager, hold handlelisten oppda
 - **Familiedeling** — opprett en familie og inviter andre med en kode. Innlogging med e-post/passord eller Google.
 - **Flerspråklig** — norsk, engelsk, dansk, svensk, tysk, fransk, spansk og arabisk (med RTL-layout).
 - **Android-app** — pakket med Capacitor i tillegg til web.
+- **Claude-integrasjon (MCP)** — be Claude om en oppskrift i en vanlig samtale (også på mobilen), og få den lagt rett inn i middagsarkivet, ukeplanen og handlelisten via en egen MCP-server.
 
 | Handleliste | Mobil |
 | --- | --- |
@@ -27,6 +28,7 @@ Et delt dashboard for familien: planlegg ukens middager, hold handlelisten oppda
 - **Firebase**: Authentication, Cloud Firestore (sanntidssynkronisering), Hosting
 - **Capacitor 8** for Android-innpakning
 - **i18next** for internasjonalisering
+- **MCP-server** (Model Context Protocol) på Cloud Functions for Claude-integrasjon
 
 ## Prøv demoen — uten oppsett
 
@@ -60,6 +62,16 @@ npx cap sync android
 npx cap open android   # åpner Android Studio for bygg/kjøring
 ```
 
+## Claude-integrasjon (MCP-server)
+
+I [mcp-server/](mcp-server/) ligger en ekstern MCP-server som gjør Family Dash
+tilgjengelig som «custom connector» på [claude.ai](https://claude.ai) — også i
+mobilappen. Da kan du be Claude finne en oppskrift, legge den i middagsarkivet,
+planlegge den på en ukedag og legge ingrediensene i handlelisten, i én og samme
+samtale. Serveren kjører som en Cloud Function i samme Firebase-prosjekt og
+eksponerer verktøy for middagsarkiv, ukeplan og handlelister. Se
+[mcp-server/README.md](mcp-server/README.md) for oppsett.
+
 ## Prosjektstruktur
 
 ```
@@ -71,6 +83,7 @@ src/
 ├── pages/        # Dashboard, ShoppingList, Settings, Account, Login, Register
 ├── services/     # backend-fasade, Firebase-init, demo-backend, Unsplash-klient
 └── utils/        # Dato-hjelpere, oppskriftsparser
+mcp-server/       # MCP-server for Claude-integrasjon (Cloud Functions)
 ```
 
 ## Lisens
