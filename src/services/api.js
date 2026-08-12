@@ -23,13 +23,14 @@ export async function removeDinnerFromDay(familyId, date) {
 }
 
 // Shopping List Functions
-export async function addShoppingItem(familyId, listId, name, categoryId, quantity = 1) {
+export async function addShoppingItem(familyId, listId, name, categoryId, quantity = 1, note = '') {
     const itemsRef = collection(db, `families/${familyId}/shoppingLists/${listId}/items`);
     await addDoc(itemsRef, {
         name,
         checked: false,
         categoryId: categoryId || null,
-        quantity
+        quantity,
+        note: note || null
     });
 }
 

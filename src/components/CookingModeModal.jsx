@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, CheckCircle2, Circle, ChevronDown, ChevronUp, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { parseIngredientLine } from '../utils/recipeParser';
 
 const TIMER_PRESETS = [
     { label: '1m', seconds: 60 },
@@ -91,9 +92,9 @@ export default function CookingModeModal({ isOpen, onClose, dinner }) {
     const isLastStep = currentStep === totalSteps - 1;
     const progress = ((currentStep + 1) / totalSteps) * 100;
 
-    const ingredients = dinner.parsedIngredients?.length
-        ? dinner.parsedIngredients
-        : (dinner.ingredients || []).map(ing => ({ name: ing, quantity: '' }));
+    const ingredients = dinner.ingredients?.length
+        ? dinner.ingredients.map(parseIngredientLine)
+        : (dinner.parsedIngredients || []);
 
     function toggleIngredient(i) {
         setCheckedIngredients(prev => {

@@ -495,9 +495,14 @@ export default function ShoppingList() {
                         `}>
                                                     {item.checked && <Check size={14} className="text-white" />}
                                                 </div>
-                                                <span className={`text-lg ${item.checked ? 'text-gray-500 line-through' : 'text-white'}`}>
-                                                    {item.name}
-                                                </span>
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className={`text-lg ${item.checked ? 'text-gray-500 line-through' : 'text-white'}`}>
+                                                        {item.name}
+                                                    </span>
+                                                    {item.note && (
+                                                        <span className="text-xs text-gray-500 truncate">{item.note}</span>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center gap-2 justify-between w-full mt-2">
@@ -580,9 +585,14 @@ export default function ShoppingList() {
                         `}>
                                                 {item.checked && <Check size={14} className="text-white" />}
                                             </div>
-                                            <span className={`text-lg ${item.checked ? 'text-gray-500 line-through' : 'text-white'}`}>
-                                                {item.name}
-                                            </span>
+                                            <div className="flex flex-col overflow-hidden">
+                                                <span className={`text-lg ${item.checked ? 'text-gray-500 line-through' : 'text-white'}`}>
+                                                    {item.name}
+                                                </span>
+                                                {item.note && (
+                                                    <span className="text-xs text-gray-500 truncate">{item.note}</span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center gap-2 justify-between w-full mt-2">

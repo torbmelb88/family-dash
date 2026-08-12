@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, ExternalLink, Clock, Users, ChevronLeft, ChevronRight, CheckCircle2, UtensilsCrossed } from 'lucide-react';
 import { useShoppingList } from '../hooks/useShoppingList';
 import { addShoppingItem, updateShoppingItem, deleteShoppingItem, getCategoryHistory, updateCategoryHistory } from '../services/api';
+import { parseIngredientLine } from '../utils/recipeParser';
 import RecipeModal from './RecipeModal';
 import CookingModeModal from './CookingModeModal';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +49,7 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
 
     if (!isOpen || !dinner) return null;
 
-    async function handleQuantityChange(ingredientName, change) {
+    async function handleQuantityChange(ingredientName, change, note = '') {
         if (!familyId || !selectedListId) return;
         const existingItem = items.find(i => i.name.toLowerCase() === ingredientName.toLowerCase());
         try {
@@ -66,7 +67,7 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
                     const catExists = categories.some(c => c.id === historyCatId);
                     if (catExists) categoryId = historyCatId;
                 }
-                await addShoppingItem(familyId, selectedListId, ingredientName, categoryId);
+                await addShoppingItem(familyId, selectedListId, ingredientName, categoryId, 1, note);
                 if (categoryId) await updateCategoryHistory(familyId, ingredientName, categoryId);
             }
         } catch (err) {
@@ -172,10 +173,10 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
 
                                 <div className="space-y-2">
                                     {dinner.ingredients?.map((rawIngredient, index) => {
-                                        // Use parsed name for shopping list if available
-                                        const parsed = dinner.parsedIngredients?.[index];
-                                        const shoppingName = parsed?.name || rawIngredient;
-                                        const recipeQuantity = parsed?.quantity || '';
+                                        // Parse live so old dinners and MCP-added dinners get clean names too
+                                        const parsed = parseIngredientLine(rawIngredient);
+                                        const shoppingName = parsed.name || rawIngredient;
+                                        const recipeQuantity = parsed.quantity || '';
 
                                         const existingItem = items.find(i => i.name.toLowerCase() === shoppingName.toLowerCase());
                                         const listQty = existingItem ? (existingItem.quantity || 1) : 0;
@@ -208,7 +209,7 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
                                                             </button>
                                                             <span className="w-8 text-center text-sm font-bold text-white">{listQty}</span>
                                                             <button
-                                                                onClick={() => handleQuantityChange(shoppingName, 1)}
+                                                                onClick={() => handleQuantityChange(shoppingName, 1, recipeQuantity)}
                                                                 className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-r-lg"
                                                             >
                                                                 <Plus size={16} />
@@ -216,7 +217,7 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
                                                         </div>
                                                     ) : (
                                                         <button
-                                                            onClick={() => handleQuantityChange(shoppingName, 1)}
+                                                            onClick={() => handleQuantityChange(shoppingName, 1, recipeQuantity)}
                                                             className="p-2 bg-white/5 hover:bg-primary hover:text-white text-gray-400 rounded-lg transition-colors"
                                                         >
                                                             <Plus size={20} />
