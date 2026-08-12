@@ -74,6 +74,38 @@ function fail(message) {
     return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
 }
 
+// ---------- Unsplash image lookup (mirrors src/services/unsplash.js) ----------
+
+async function translateToEnglish(text) {
+    try {
+        const res = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=no|en`
+        );
+        if (!res.ok) return text;
+        const data = await res.json();
+        return data.responseData?.translatedText || text;
+    } catch {
+        return text;
+    }
+}
+
+async function fetchDinnerImage(dishName) {
+    const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (!dishName || !accessKey) return null;
+    try {
+        const englishName = await translateToEnglish(dishName);
+        const query = encodeURIComponent(`${englishName} food`);
+        const url = `https://api.unsplash.com/search/photos?query=${query}&per_page=1&orientation=landscape&client_id=${accessKey}`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.results?.[0]?.urls?.regular || null;
+    } catch (err) {
+        console.error('Unsplash lookup failed:', err);
+        return null;
+    }
+}
+
 async function resolveListId(familyId, listId) {
     if (listId) return listId;
     const familyDoc = await db.doc(`families/${familyId}`).get();
@@ -107,7 +139,7 @@ function buildServer() {
 
     server.registerTool('add_dinner', {
         title: 'Add dinner to archive',
-        description: 'Add a new dinner/recipe to the family dinner archive (middagsarkivet). Ingredients should be one entry per ingredient, in Norwegian, including quantity (e.g. "400 g kyllingfilet").',
+        description: 'Add a new dinner/recipe to the family dinner archive (middagsarkivet). Ingredients should be one entry per ingredient, in Norwegian, including quantity (e.g. "400 g kyllingfilet"). If imageUrl is omitted, a matching food photo is fetched automatically from Unsplash.',
         inputSchema: {
             dish: z.string().describe('Dish name in Norwegian, e.g. "Kylling tikka masala"'),
             ingredients: z.array(z.string()).describe('Ingredient lines incl. quantities'),
@@ -119,11 +151,12 @@ function buildServer() {
         },
     }, async ({ dish, ingredients, recipeLink, imageUrl, steps, portions, cookTime }) => {
         const familyId = await getFamilyId();
+        const resolvedImageUrl = imageUrl || await fetchDinnerImage(dish);
         const dinnerData = {
             dish,
             ingredients,
             recipeLink: recipeLink || null,
-            imageUrl: imageUrl || null,
+            imageUrl: resolvedImageUrl || null,
             ...(steps && steps.length > 0 && { steps }),
             ...(portions && { portions }),
             ...(cookTime && { cookTime }),
@@ -234,6 +267,7 @@ function buildServer() {
             id: i.id,
             name: i.get('name'),
             quantity: i.get('quantity') || 1,
+            note: i.get('note') || null,
             checked: !!i.get('checked'),
             category: categoryNames.get(i.get('categoryId')) || null,
         }));
@@ -242,11 +276,12 @@ function buildServer() {
 
     server.registerTool('add_shopping_items', {
         title: 'Add items to shopping list',
-        description: 'Add one or more items to a shopping list (defaults to the default list). Item names in Norwegian. If categoryId is omitted, the family\'s category history is used to place each item in the category it usually gets ("melk" goes where melk went last time). Use get_shopping_lists to see valid categoryIds.',
+        description: 'Add one or more items to a shopping list (defaults to the default list). Item names in Norwegian. Use the bare product name as name ("Smør", not "1 ss smør") so the same product matches across recipes; put amounts/units in note instead. If categoryId is omitted, the family\'s category history is used to place each item in the category it usually gets ("melk" goes where melk went last time). Use get_shopping_lists to see valid categoryIds.',
         inputSchema: {
             items: z.array(z.object({
-                name: z.string().describe('Item name in Norwegian, e.g. "Melk"'),
+                name: z.string().describe('Bare item name in Norwegian without amounts, e.g. "Melk"'),
                 quantity: z.number().optional().describe('Defaults to 1'),
+                note: z.string().optional().describe('Amount/unit or other info shown as secondary text, e.g. "1 ss" or "400 g"'),
                 categoryId: z.string().optional().describe('Category id; omit to auto-resolve from history'),
             })).min(1),
             listId: z.string().optional().describe('Shopping list id; omit for the default list'),
@@ -273,8 +308,9 @@ function buildServer() {
                 checked: false,
                 categoryId,
                 quantity: item.quantity || 1,
+                note: item.note || null,
             });
-            added.push({ id: docRef.id, name: item.name, quantity: item.quantity || 1, categoryId });
+            added.push({ id: docRef.id, name: item.name, quantity: item.quantity || 1, note: item.note || null, categoryId });
         }
         await batch.commit();
         return ok({ listId: resolvedListId, added });
