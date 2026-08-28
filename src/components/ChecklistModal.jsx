@@ -13,7 +13,7 @@ import {
     addShoppingItem, // [NEW]
     updateShoppingItem, // [NEW]
     deleteShoppingItem, // [NEW]
-    getCategoryHistory, // [NEW]
+    resolveKnownItem,
     updateCategoryHistory // [NEW]
 } from '../services/api';
 
@@ -115,22 +115,22 @@ export default function ChecklistModal({ isOpen, onClose }) {
                     await updateShoppingItem(familyId, selectedListId, existingItem.id, { quantity: newQuantity });
                 }
             } else if (change > 0) {
-                // Check category history
+                // Use the family's spelling for known products and their remembered category
+                const known = await resolveKnownItem(familyId, itemName);
                 let categoryId = null;
-                const historyCatId = await getCategoryHistory(familyId, itemName);
-                if (historyCatId) {
+                if (known.categoryId) {
                     // Verify category still exists
-                    const catExists = categories.some(c => c.id === historyCatId);
+                    const catExists = categories.some(c => c.id === known.categoryId);
                     if (catExists) {
-                        categoryId = historyCatId;
+                        categoryId = known.categoryId;
                     }
                 }
 
-                await addShoppingItem(familyId, selectedListId, itemName, categoryId);
+                await addShoppingItem(familyId, selectedListId, known.name, categoryId);
 
                 // Update history if we have a category
                 if (categoryId) {
-                    await updateCategoryHistory(familyId, itemName, categoryId);
+                    await updateCategoryHistory(familyId, known.name, categoryId);
                 }
             }
         } catch (err) {

@@ -1,3 +1,6 @@
+// Mirrors parseIngredientLine in src/utils/recipeParser.js — keep the two in sync.
+// The Cloud Function is deployed from this directory alone, so it cannot import from ../src.
+
 // Units that can follow a leading amount, e.g. "2 ss olivenolje", "1 boks hermetiske tomater"
 const UNITS = new Set([
     'g', 'gram', 'kg', 'hg', 'mg',
@@ -130,70 +133,4 @@ export function parseIngredientLine(line) {
     return { name, amount, unit, note, quantity };
 }
 
-export function parseRecipeText(text) {
-    if (!text || !text.trim()) return null;
-
-    const lines = text.split('\n').map(l => l.trim());
-    let i = 0;
-
-    // Skip blank lines at the top
-    while (i < lines.length && !lines[i]) i++;
-    if (i >= lines.length) return null;
-
-    const dish = lines[i++];
-
-    let portions = '';
-    let cookTime = '';
-    const ingredients = [];      // full original strings (backward compat)
-    const parsedIngredients = []; // { name, amount, unit, note, quantity }
-    const steps = [];
-
-    // Read metadata lines (Kategori / Porsjoner / Tid)
-    while (i < lines.length) {
-        const line = lines[i];
-        if (!line) { i++; continue; }
-
-        const portionsMatch = line.match(/^Porsjoner\s*:\s*(.+)/i);
-        const timeMatch = line.match(/^Tid\s*:\s*(.+)/i);
-
-        if (portionsMatch) { portions = portionsMatch[1].trim(); i++; continue; }
-        if (timeMatch) { cookTime = timeMatch[1].trim(); i++; continue; }
-
-        if (/^(Ingredienser|Fremgangsmåte)/i.test(line)) break;
-        if (/^Kategori\s*:/i.test(line)) { i++; continue; }
-        break;
-    }
-
-    // Parse Ingredienser section
-    while (i < lines.length && !/^Ingredienser/i.test(lines[i])) i++;
-    i++;
-
-    while (i < lines.length) {
-        const line = lines[i];
-        if (/^Fremgangsmåte/i.test(line)) break;
-        if (line) {
-            ingredients.push(line);
-            parsedIngredients.push(parseIngredientLine(line));
-        }
-        i++;
-    }
-
-    // Parse Fremgangsmåte section
-    while (i < lines.length && !/^Fremgangsmåte/i.test(lines[i])) i++;
-    i++;
-
-    let currentStep = [];
-    while (i < lines.length) {
-        const line = lines[i];
-        if (line) {
-            currentStep.push(line);
-        } else if (currentStep.length > 0) {
-            steps.push(currentStep.join(' '));
-            currentStep = [];
-        }
-        i++;
-    }
-    if (currentStep.length > 0) steps.push(currentStep.join(' '));
-
-    return { dish, portions, cookTime, ingredients, parsedIngredients, steps };
-}
+export { capitalize };

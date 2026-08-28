@@ -24,12 +24,20 @@ Cursor og VS Code.
 | --- | --- |
 | `list_dinners` | Søk/list i middagsarkivet |
 | `add_dinner` | Legg ny oppskrift i middagsarkivet (ingredienser, lenke, steg …) |
+| `update_dinner` | Endre en eksisterende middag (navn, ingredienser, lenke, steg …) |
+| `delete_dinner` | Slett en middag fra arkivet og fjern den fra ukeplanene |
 | `get_week_plan` | Hent ukeplanen med oppløste middagsnavn |
 | `plan_dinner` | Legg en middag på en gitt dato |
 | `remove_planned_dinner` | Fjern planlagt middag fra en dato |
 | `get_shopping_lists` | List handlelister med kategorier |
 | `get_shopping_items` | Hent varene på en liste |
-| `add_shopping_items` | Legg varer i en liste (bruker kategorihistorikken, så varer automatisk havner i riktig kategori) |
+| `get_known_items` | Varenavnene familien faktisk bruker, med kategori — så Claude skriver «Fløte», ikke «Matfløte» |
+| `merge_known_items` | Slå sammen duplikater i varelista («Cherrytomat» → «Cherrytomater»); det sammenslåtte navnet blir alias og rettes automatisk både fra Claude og i appen |
+| `rename_known_item` | Gi en vare nytt navn uten å etterlate alias (også på handlelistene) |
+| `unmerge_known_item` | Løsne ett alias til egen vare igjen |
+| `delete_known_items` | Fjern navn fra varelista |
+| `add_shopping_items` | Legg varer i en liste. Kategori settes fra kategorihistorikken: eksakt navn først, deretter sammensatt ord («kremfløte» → «fløte»). Varer uten treff rapporteres tilbake |
+| `remove_shopping_items` | Fjern varer fra en liste etter id eller navn, eller tøm alt som er krysset av |
 
 ## Oppsett
 

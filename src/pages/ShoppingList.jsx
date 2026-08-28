@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useShoppingList } from '../hooks/useShoppingList';
-import { addShoppingItem, updateShoppingItem, deleteShoppingItem, clearCheckedItems, createShoppingList, updateShoppingList, deleteShoppingList, setDefaultShoppingList, moveShoppingItem, createShoppingListCategory, updateShoppingListCategory, deleteShoppingListCategory, getCategoryHistory, updateCategoryHistory } from '../services/api';
+import { addShoppingItem, updateShoppingItem, deleteShoppingItem, clearCheckedItems, createShoppingList, updateShoppingList, deleteShoppingList, setDefaultShoppingList, moveShoppingItem, createShoppingListCategory, updateShoppingListCategory, deleteShoppingListCategory, resolveKnownItem, updateCategoryHistory } from '../services/api';
 import { Plus, Trash2, Check, ArrowLeft, MoreVertical, Edit2, Settings, Minus, Star, ClipboardList, ArrowRightLeft, ChevronDown, Play, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import EditListModal from '../components/EditListModal';
@@ -74,26 +74,23 @@ export default function ShoppingList() {
         if (!newItemName.trim() || !activeListId || !familyId) return;
 
         try {
-            // Check for category history if no category selected
+            // Use the family's spelling for known products, and their remembered category if none selected
+            const known = await resolveKnownItem(familyId, newItemName);
+            const itemName = known.name;
             let categoryId = newItemCategory || null;
-            if (!categoryId) {
-                const historyCatId = await getCategoryHistory(familyId, newItemName);
-                if (historyCatId) {
-                    // Verify that the category still exists in the current list (or is global)
-                    // If the category was deleted or belongs to another list, we might ignore it or stick with it if it's still valid.
-                    // For simplicity: check if available in standard categories
-                    const catExists = categories.some(c => c.id === historyCatId);
-                    if (catExists) {
-                        categoryId = historyCatId;
-                    }
+            if (!categoryId && known.categoryId) {
+                // Verify that the category still exists in the current list (or is global)
+                const catExists = categories.some(c => c.id === known.categoryId);
+                if (catExists) {
+                    categoryId = known.categoryId;
                 }
             }
 
-            await addShoppingItem(familyId, activeListId, newItemName, categoryId);
+            await addShoppingItem(familyId, activeListId, itemName, categoryId);
 
             // Update history if we have a category
             if (categoryId) {
-                await updateCategoryHistory(familyId, newItemName, categoryId);
+                await updateCategoryHistory(familyId, itemName, categoryId);
             }
 
             setNewItemName('');

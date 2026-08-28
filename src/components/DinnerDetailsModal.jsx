@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Minus, Trash2, ExternalLink, Clock, Users, ChevronLeft, ChevronRight, CheckCircle2, UtensilsCrossed } from 'lucide-react';
 import { useShoppingList } from '../hooks/useShoppingList';
-import { addShoppingItem, updateShoppingItem, deleteShoppingItem, getCategoryHistory, updateCategoryHistory } from '../services/api';
+import { addShoppingItem, updateShoppingItem, deleteShoppingItem, resolveKnownItem, updateCategoryHistory } from '../services/api';
 import { parseIngredientLine } from '../utils/recipeParser';
 import RecipeModal from './RecipeModal';
 import CookingModeModal from './CookingModeModal';
@@ -51,7 +51,10 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
 
     async function handleQuantityChange(ingredientName, change, note = '') {
         if (!familyId || !selectedListId) return;
-        const existingItem = items.find(i => i.name.toLowerCase() === ingredientName.toLowerCase());
+        // Known products use the family's spelling ("cherrytomat" → "Cherrytomater"), so match on that too
+        const known = await resolveKnownItem(familyId, ingredientName);
+        const existingItem = items.find(i => i.name.toLowerCase() === known.name.toLowerCase())
+            || items.find(i => i.name.toLowerCase() === ingredientName.toLowerCase());
         try {
             if (existingItem) {
                 const newQuantity = (existingItem.quantity || 1) + change;
@@ -61,14 +64,10 @@ export default function DinnerDetailsModal({ isOpen, onClose, dinner }) {
                     await updateShoppingItem(familyId, selectedListId, existingItem.id, { quantity: newQuantity });
                 }
             } else if (change > 0) {
-                let categoryId = null;
-                const historyCatId = await getCategoryHistory(familyId, ingredientName);
-                if (historyCatId) {
-                    const catExists = categories.some(c => c.id === historyCatId);
-                    if (catExists) categoryId = historyCatId;
-                }
-                await addShoppingItem(familyId, selectedListId, ingredientName, categoryId, 1, note);
-                if (categoryId) await updateCategoryHistory(familyId, ingredientName, categoryId);
+                const catExists = known.categoryId && categories.some(c => c.id === known.categoryId);
+                const categoryId = catExists ? known.categoryId : null;
+                await addShoppingItem(familyId, selectedListId, known.name, categoryId, 1, note);
+                if (categoryId) await updateCategoryHistory(familyId, known.name, categoryId);
             }
         } catch (err) {
             console.error("Error updating item:", err);

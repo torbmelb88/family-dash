@@ -204,19 +204,32 @@ export async function moveShoppingItem(familyId, sourceListId, targetListId, ite
 }
 
 // Category History / Smart Memory
-export async function getCategoryHistory(familyId, itemName) {
-    if (!itemName) return null;
+/**
+ * Looks a typed item name up in the family's category memory.
+ * Returns the name the family uses for that product and its remembered category.
+ * Merged duplicates (docs with an `alias` field, created via the MCP server) resolve to the
+ * kept item, so "cherrytomat" comes back as "Cherrytomater".
+ */
+export async function resolveKnownItem(familyId, itemName) {
+    const typed = (itemName || '').trim();
+    const fallback = { name: typed, categoryId: null };
     // Basic sanitization for doc ID: remove invalid path chars
-    const normalizedName = itemName.trim().toLowerCase().replace(/[#.$/[\]]/g, '');
-    if (!normalizedName) return null;
+    const normalizedName = typed.toLowerCase().replace(/[#.$/[\]]/g, '');
+    if (!normalizedName) return fallback;
 
-    const docRef = doc(db, `families/${familyId}/categoryHistory/${normalizedName}`);
-    const docSnap = await getDoc(docRef);
+    let docSnap = await getDoc(doc(db, `families/${familyId}/categoryHistory/${normalizedName}`));
+    if (!docSnap.exists()) return fallback;
 
-    if (docSnap.exists()) {
-        return docSnap.data().categoryId;
+    let isAlias = false;
+    if (docSnap.data().alias) {
+        const canonical = await getDoc(doc(db, `families/${familyId}/categoryHistory/${docSnap.data().alias}`));
+        if (!canonical.exists() || canonical.data().alias) return fallback; // dangling alias
+        docSnap = canonical;
+        isAlias = true;
     }
-    return null;
+    const data = docSnap.data();
+    const storedName = data.name || (isAlias ? docSnap.id.charAt(0).toUpperCase() + docSnap.id.slice(1) : typed);
+    return { name: storedName, categoryId: data.categoryId || null };
 }
 
 export async function updateCategoryHistory(familyId, itemName, categoryId) {
@@ -227,6 +240,7 @@ export async function updateCategoryHistory(familyId, itemName, categoryId) {
     const docRef = doc(db, `families/${familyId}/categoryHistory/${normalizedName}`);
     await setDoc(docRef, {
         categoryId,
+        name: itemName.trim(), // display name, reused by the MCP server so Claude spells items the way the family does
         updatedAt: serverTimestamp()
     }, { merge: true });
 }
