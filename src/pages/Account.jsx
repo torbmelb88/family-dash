@@ -25,6 +25,7 @@ export default function Account() {
 
     // Modals
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showReauthModal, setShowReauthModal] = useState(false);
     const [pendingAction, setPendingAction] = useState(null); // 'password' or 'delete'
 
@@ -50,15 +51,17 @@ export default function Account() {
         }
     }
 
-    async function handleSendPasswordReset() {
-        if (window.confirm(`Sende e-post for passord-nullstilling til ${currentUser.email}?`)) {
-            try {
-                await sendPasswordResetEmail(auth, currentUser.email);
-                setMessage({ type: 'success', text: 'E-post sendt! Sjekk innboksen din.' });
-            } catch (error) {
-                console.error("Reset failed", error);
-                setMessage({ type: 'error', text: 'Kunne ikke sende e-post.' });
-            }
+    function handleSendPasswordReset() {
+        setShowResetConfirm(true);
+    }
+
+    async function confirmSendPasswordReset() {
+        try {
+            await sendPasswordResetEmail(auth, currentUser.email);
+            setMessage({ type: 'success', text: 'E-post sendt! Sjekk innboksen din.' });
+        } catch (error) {
+            console.error("Reset failed", error);
+            setMessage({ type: 'error', text: 'Kunne ikke sende e-post.' });
         }
     }
 
@@ -289,6 +292,17 @@ export default function Account() {
                     setShowDeleteConfirm(false);
                     setShowReauthModal(true);
                 }}
+            />
+
+            {/* Password Reset Confirm Modal */}
+            <ConfirmModal
+                isOpen={showResetConfirm}
+                onClose={() => setShowResetConfirm(false)}
+                onConfirm={confirmSendPasswordReset}
+                title="Nullstill passord?"
+                message={`Sende e-post for passord-nullstilling til ${currentUser?.email}?`}
+                confirmText="Send e-post"
+                confirmColor="bg-primary"
             />
 
             {/* Re-auth Modal */}

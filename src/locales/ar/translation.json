@@ -12,7 +12,8 @@
         "error": "حدث خطأ",
         "name": "الاسم",
         "enterName": "أدخل الاسم...",
-        "confirm": "تأكيد"
+        "confirm": "تأكيد",
+        "remove": "إزالة"
     },
     "account": {
         "title": "ملفي الشخصي",
@@ -143,7 +144,8 @@
         "linkedTo": "مرتبط بـ {{count}} قائمة/قوائم",
         "allLists": "متاح لجميع القوائم",
         "newProfile": "ملف تعريف متجر جديد",
-        "confirmDelete": "هل أنت متأكد أنك تريد حذف هذا الملف الشخصي؟"
+        "confirmDelete": "هل أنت متأكد أنك تريد حذف هذا الملف الشخصي؟",
+        "deleteTitle": "حذف ملف المتجر"
     },
     "storeProfileEditor": {
         "title": "تعديل ملف تعريف المتجر",
@@ -189,6 +191,8 @@
         "other": "أخرى",
         "addTo": "إضافة إلى:",
         "btnAdd": "إضافة {{count}} عنصر/عناصر",
-        "select": "اختر..."
+        "select": "اختر...",
+        "deleteSectionTitle": "حذف القسم",
+        "deleteItemTitle": "حذف العنصر"
     }
 }

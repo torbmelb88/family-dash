@@ -6,6 +6,7 @@ import WeekView from '../components/WeekView';
 import AddDinnerModal from '../components/AddDinnerModal';
 import DinnerDetailsModal from '../components/DinnerDetailsModal';
 import ShoppingSummaryCard from '../components/ShoppingSummaryCard';
+import ConfirmModal from '../components/ConfirmModal';
 import { Settings, ShoppingCart, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +19,7 @@ export default function Dashboard() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDayForDinner, setSelectedDayForDinner] = useState(null);
+    const [dayToRemove, setDayToRemove] = useState(null);
     const [selectedDinnerForDetails, setSelectedDinnerForDetails] = useState(null);
 
     function handleAddDinnerClick(day) {
@@ -42,15 +44,18 @@ export default function Dashboard() {
         }
     }
 
-    async function handleRemoveDinner(day) {
+    function handleRemoveDinner(day) {
         if (!familyId) return;
-        if (window.confirm(t('dashboard.confirmRemoveDinner', { date: day.date.toLocaleDateString() }))) {
-            try {
-                await removeDinnerFromDay(familyId, day.date);
-            } catch (err) {
-                console.error("Error removing dinner:", err);
-                alert(t('dashboard.errorRemoveDinner'));
-            }
+        setDayToRemove(day);
+    }
+
+    async function confirmRemoveDinner() {
+        if (!familyId || !dayToRemove) return;
+        try {
+            await removeDinnerFromDay(familyId, dayToRemove.date);
+        } catch (err) {
+            console.error("Error removing dinner:", err);
+            alert(t('dashboard.errorRemoveDinner'));
         }
     }
 
@@ -121,6 +126,14 @@ export default function Dashboard() {
                 isOpen={!!selectedDinnerForDetails}
                 onClose={() => setSelectedDinnerForDetails(null)}
                 dinner={selectedDinnerForDetails}
+            />
+            <ConfirmModal
+                isOpen={!!dayToRemove}
+                onClose={() => setDayToRemove(null)}
+                onConfirm={confirmRemoveDinner}
+                title={t('dayCard.removeDinner')}
+                message={dayToRemove ? t('dashboard.confirmRemoveDinner', { date: dayToRemove.date.toLocaleDateString() }) : ''}
+                confirmText={t('common.remove')}
             />
         </div>
     );

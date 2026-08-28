@@ -12,7 +12,8 @@
         "error": "Ett fel inträffade",
         "name": "Namn",
         "enterName": "Ange namn...",
-        "confirm": "Bekräfta"
+        "confirm": "Bekräfta",
+        "remove": "Ta bort"
     },
     "account": {
         "title": "Min Profil",
@@ -143,7 +144,8 @@
         "linkedTo": "Kopplad till {{count}} lista/listor",
         "allLists": "Tillgänglig för alla listor",
         "newProfile": "Ny butiksprofil",
-        "confirmDelete": "Är du säker på att du vill ta bort denna profil?"
+        "confirmDelete": "Är du säker på att du vill ta bort denna profil?",
+        "deleteTitle": "Ta bort butiksprofil"
     },
     "storeProfileEditor": {
         "title": "Redigera Butiksprofil",
@@ -189,6 +191,8 @@
         "other": "Övrigt",
         "addTo": "Lägg till i:",
         "btnAdd": "Lägg till {{count}} varor",
-        "select": "Välj..."
+        "select": "Välj...",
+        "deleteSectionTitle": "Ta bort rubrik",
+        "deleteItemTitle": "Ta bort vara"
     }
 }

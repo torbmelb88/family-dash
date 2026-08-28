@@ -12,7 +12,8 @@
         "error": "Une erreur est survenue",
         "name": "Nom",
         "enterName": "Saisir le nom...",
-        "confirm": "Confirmer"
+        "confirm": "Confirmer",
+        "remove": "Retirer"
     },
     "account": {
         "title": "Mon Profil",
@@ -142,7 +143,8 @@
         "linkedTo": "Lié à {{count}} liste(s)",
         "allLists": "Disponible pour toutes les listes",
         "newProfile": "Nouveau profil de magasin",
-        "confirmDelete": "Voulez-vous vraiment supprimer ce profil ?"
+        "confirmDelete": "Voulez-vous vraiment supprimer ce profil ?",
+        "deleteTitle": "Supprimer le profil de magasin"
     },
     "storeProfileEditor": {
         "title": "Modifier le profil du magasin",
@@ -184,6 +186,8 @@
         "other": "Autre",
         "addTo": "Ajouter à :",
         "btnAdd": "Ajouter {{count}} articles",
-        "select": "Sélectionner..."
+        "select": "Sélectionner...",
+        "deleteSectionTitle": "Supprimer la section",
+        "deleteItemTitle": "Supprimer l'article"
     }
 }

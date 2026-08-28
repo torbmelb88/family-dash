@@ -12,7 +12,8 @@
         "error": "Ocurrió un error",
         "name": "Nombre",
         "enterName": "Ingresar nombre...",
-        "confirm": "Confirmar"
+        "confirm": "Confirmar",
+        "remove": "Quitar"
     },
     "account": {
         "title": "Mi Perfil",
@@ -143,7 +144,8 @@
         "linkedTo": "Vinculado a {{count}} lista(s)",
         "allLists": "Disponible para todas las listas",
         "newProfile": "Nuevo perfil de tienda",
-        "confirmDelete": "¿Estás seguro de que quieres eliminar este perfil?"
+        "confirmDelete": "¿Estás seguro de que quieres eliminar este perfil?",
+        "deleteTitle": "Eliminar perfil de tienda"
     },
     "storeProfileEditor": {
         "title": "Editar perfil de tienda",
@@ -185,6 +187,8 @@
         "other": "Otros",
         "addTo": "Añadir a:",
         "btnAdd": "Añadir {{count}} artículos",
-        "select": "Seleccionar..."
+        "select": "Seleccionar...",
+        "deleteSectionTitle": "Eliminar sección",
+        "deleteItemTitle": "Eliminar artículo"
     }
 }

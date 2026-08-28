@@ -12,7 +12,8 @@
         "error": "Ein Fehler ist aufgetreten",
         "name": "Name",
         "enterName": "Name eingeben...",
-        "confirm": "Bestätigen"
+        "confirm": "Bestätigen",
+        "remove": "Entfernen"
     },
     "account": {
         "title": "Mein Profil",
@@ -143,7 +144,8 @@
         "linkedTo": "Verknüpft mit {{count}} Liste(n)",
         "allLists": "Für alle Listen verfügbar",
         "newProfile": "Neues Ladenprofil",
-        "confirmDelete": "Möchten Sie dieses Profil wirklich löschen?"
+        "confirmDelete": "Möchten Sie dieses Profil wirklich löschen?",
+        "deleteTitle": "Ladenprofil löschen"
     },
     "storeProfileEditor": {
         "title": "Ladenprofil bearbeiten",
@@ -189,6 +191,8 @@
         "other": "Sonstiges",
         "addTo": "Hinzufügen zu:",
         "btnAdd": "{{count}} Artikel hinzufügen",
-        "select": "Wählen..."
+        "select": "Wählen...",
+        "deleteSectionTitle": "Abschnitt löschen",
+        "deleteItemTitle": "Artikel löschen"
     }
 }

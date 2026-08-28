@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { X, Plus, Trash2, Edit2, Check, Minus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useChecklist } from '../hooks/useChecklist';
+import ConfirmModal from './ConfirmModal';
 import { useShoppingList } from '../hooks/useShoppingList'; // [NEW]
 import {
     addChecklistItem,
@@ -24,6 +25,9 @@ export default function ChecklistModal({ isOpen, onClose }) {
     // [NEW] Shopping List Integration
     const { items: shoppingItems, activeListId, shoppingLists, setActiveListId, defaultListId, categories } = useShoppingList();
     const [selectedListId, setSelectedListId] = useState('');
+
+    // Confirm dialog state
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
     // New Item State
     const [newItemName, setNewItemName] = useState('');
@@ -175,13 +179,19 @@ export default function ChecklistModal({ isOpen, onClose }) {
         }
     };
 
-    const handleDeleteSection = async (sectionId) => {
-        if (!window.confirm(t('checklist.confirmDeleteSection'))) return;
-        try {
-            await deleteChecklistSection(familyId, sectionId);
-        } catch (err) {
-            console.error("Error deleting section:", err);
-        }
+    const handleDeleteSection = (sectionId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: t('checklist.deleteSectionTitle'),
+            message: t('checklist.confirmDeleteSection'),
+            onConfirm: async () => {
+                try {
+                    await deleteChecklistSection(familyId, sectionId);
+                } catch (err) {
+                    console.error("Error deleting section:", err);
+                }
+            }
+        });
     };
 
     const handleSectionChange = (e) => {
@@ -203,11 +213,17 @@ export default function ChecklistModal({ isOpen, onClose }) {
         } catch (err) { console.error(err); }
     };
 
-    const handleDeleteItem = async (itemId) => {
-        if (!window.confirm(t('checklist.confirmDeleteItem'))) return;
-        try {
-            await deleteChecklistItem(familyId, itemId);
-        } catch (err) { console.error(err); }
+    const handleDeleteItem = (itemId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: t('checklist.deleteItemTitle'),
+            message: t('checklist.confirmDeleteItem'),
+            onConfirm: async () => {
+                try {
+                    await deleteChecklistItem(familyId, itemId);
+                } catch (err) { console.error(err); }
+            }
+        });
     };
 
     const startEditing = (item, e) => {
@@ -513,6 +529,14 @@ export default function ChecklistModal({ isOpen, onClose }) {
                 </div>
                 {/* No bottom footer needed now */}
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={() => confirmModal.onConfirm && confirmModal.onConfirm()}
+                title={confirmModal.title}
+                message={confirmModal.message}
+            />
         </div>
     );
 }

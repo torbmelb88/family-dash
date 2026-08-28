@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Settings, Plus, Edit2, Trash2, X } from 'lucide-react';
 import StoreProfileEditor from './StoreProfileEditor';
+import ConfirmModal from './ConfirmModal';
 import { deleteStoreProfile } from '../services/api';
 import { useTranslation } from 'react-i18next';
 
@@ -8,16 +9,20 @@ export default function StoreProfilesModal({ isOpen, onClose, shoppingLists, sto
     const { t } = useTranslation();
     const [editingProfile, setEditingProfile] = useState(null);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [profileToDelete, setProfileToDelete] = useState(null);
 
     if (!isOpen) return null;
 
-    async function handleDelete(profileId) {
-        if (window.confirm(t('storeProfiles.confirmDelete'))) {
-            try {
-                await deleteStoreProfile(familyId, profileId);
-            } catch (err) {
-                console.error("Error deleting profile:", err);
-            }
+    function handleDelete(profileId) {
+        setProfileToDelete(profileId);
+    }
+
+    async function confirmDelete() {
+        if (!profileToDelete) return;
+        try {
+            await deleteStoreProfile(familyId, profileToDelete);
+        } catch (err) {
+            console.error("Error deleting profile:", err);
         }
     }
 
@@ -99,6 +104,14 @@ export default function StoreProfilesModal({ isOpen, onClose, shoppingLists, sto
                     </button>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={!!profileToDelete}
+                onClose={() => setProfileToDelete(null)}
+                onConfirm={confirmDelete}
+                title={t('storeProfiles.deleteTitle')}
+                message={t('storeProfiles.confirmDelete')}
+            />
         </div>
     );
 }

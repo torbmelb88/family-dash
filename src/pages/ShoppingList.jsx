@@ -277,9 +277,14 @@ export default function ShoppingList() {
                 // "Velger man butikk profil". Implicitly means one exists.
                 // If none, maybe just start without profile?
                 // Let's warn them or start without.
-                if (window.confirm(t('storeMode.noProfile'))) {
-                    setIsStoreMode(true);
-                }
+                setConfirmModal({
+                    isOpen: true,
+                    title: t('storeMode.defaultTitle'),
+                    message: t('storeMode.noProfile'),
+                    confirmText: t('storeMode.start'),
+                    confirmColor: 'bg-primary',
+                    onConfirm: () => setIsStoreMode(true)
+                });
             }
         }
     };
@@ -691,7 +696,8 @@ export default function ShoppingList() {
                 onConfirm={confirmModal.onConfirm || handleConfirmAction}
                 title={confirmModal.title}
                 message={confirmModal.message}
-                confirmText={confirmModal.action === 'delete' ? 'Slett' : 'Fjern'}
+                confirmText={confirmModal.confirmText || (confirmModal.action === 'delete' ? t('common.delete') : t('common.remove'))}
+                confirmColor={confirmModal.confirmColor}
             />
 
             <ChecklistModal

@@ -12,7 +12,8 @@
         "error": "Der opstod en fejl",
         "name": "Navn",
         "enterName": "Indtast navn...",
-        "confirm": "Bekræft"
+        "confirm": "Bekræft",
+        "remove": "Fjern"
     },
     "account": {
         "title": "Min Profil",
@@ -143,7 +144,8 @@
         "linkedTo": "Koblet til {{count}} liste(r)",
         "allLists": "Tilgængelig for alle lister",
         "newProfile": "Ny butiksprofil",
-        "confirmDelete": "Er du sikker på, at du vil slette denne profil?"
+        "confirmDelete": "Er du sikker på, at du vil slette denne profil?",
+        "deleteTitle": "Slet butiksprofil"
     },
     "storeProfileEditor": {
         "title": "Rediger Butiksprofil",
@@ -189,6 +191,8 @@
         "other": "Andet",
         "addTo": "Tilføj til:",
         "btnAdd": "Tilføj {{count}} varer",
-        "select": "Vælg..."
+        "select": "Vælg...",
+        "deleteSectionTitle": "Slet overskrift",
+        "deleteItemTitle": "Slet vare"
     }
 }
