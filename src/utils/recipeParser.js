@@ -62,13 +62,17 @@ function capitalize(s) {
  * Returns { name, amount, unit, note, quantity } where quantity is the
  * combined display string, e.g. "100 g, hakket".
  */
-export function parseIngredientLine(line) {
-    let rest = line.trim();
+/**
+ * Splits the leading amount and unit off an ingredient line, keeping the exact text consumed:
+ *   "400 g kyllingfilet" → { amount: "400", unit: "g", rest: "kyllingfilet", prefix: "400 g " }
+ *   "Kyllingfilet"       → { amount: "",    unit: "",  rest: "Kyllingfilet", prefix: "" }
+ * `prefix` lets callers replace just the product name while the user is typing.
+ */
+export function splitLeadingAmount(line) {
+    let rest = line;
     let amount = '';
     let unit = '';
-    let note = '';
 
-    // 1. Leading amount, e.g. "1 ss smør" / "3 kyllingfileter"
     const amountMatch = rest.match(AMOUNT_RE);
     if (amountMatch) {
         amount = amountMatch[1].replace(/\s+/g, ' ').trim();
@@ -79,6 +83,20 @@ export function parseIngredientLine(line) {
             unit = unitMatch[1].toLowerCase();
             rest = unitMatch[2];
         }
+    }
+    return { amount, unit, rest, prefix: line.slice(0, line.length - rest.length) };
+}
+
+export function parseIngredientLine(line) {
+    let rest = line.trim();
+    let amount = '';
+    let unit = '';
+    let note = '';
+
+    // 1. Leading amount, e.g. "1 ss smør" / "3 kyllingfileter"
+    const leading = splitLeadingAmount(rest);
+    if (leading.amount) {
+        ({ amount, unit, rest } = leading);
     } else {
         // 2. Legacy amount-last format: "Smør, 4 ss"
         const lastComma = rest.lastIndexOf(',');

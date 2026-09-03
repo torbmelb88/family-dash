@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useShoppingList } from '../hooks/useShoppingList';
+import { useKnownItems, matchKnownItems } from '../hooks/useKnownItems';
+import { useSuggestionNavigation } from '../hooks/useSuggestionNavigation';
+import KnownItemSuggestions from '../components/KnownItemSuggestions';
 import { addShoppingItem, updateShoppingItem, deleteShoppingItem, clearCheckedItems, createShoppingList, updateShoppingList, deleteShoppingList, setDefaultShoppingList, moveShoppingItem, createShoppingListCategory, updateShoppingListCategory, deleteShoppingListCategory, resolveKnownItem, updateCategoryHistory } from '../services/api';
 import { Plus, Trash2, Check, ArrowLeft, MoreVertical, Edit2, Settings, Minus, Star, ClipboardList, ArrowRightLeft, ChevronDown, Play, Store } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -17,6 +20,16 @@ export default function ShoppingList() {
     const { t } = useTranslation();
     const [newItemName, setNewItemName] = useState('');
     const [newItemCategory, setNewItemCategory] = useState('');
+
+    // Suggestions from the family's product vocabulary while typing a new item
+    const knownItems = useKnownItems(familyId);
+    const suggestions = useMemo(() => matchKnownItems(knownItems, newItemName), [knownItems, newItemName]);
+    const suggestionNav = useSuggestionNavigation(suggestions, newItemName, selectSuggestion);
+
+    function selectSuggestion(item) {
+        setNewItemName(item.name);
+        suggestionNav.dismiss(item.name);
+    }
     const [selectedProfileId, setSelectedProfileId] = useState('');
 
     // Modal State
@@ -401,13 +414,26 @@ export default function ShoppingList() {
                 {/* Add Item Form */}
                 <form onSubmit={handleAddItem} className="mb-4 bg-surface p-4 rounded-2xl border border-white/5 shadow-lg">
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <input
-                            type="text"
-                            value={newItemName}
-                            onChange={(e) => setNewItemName(e.target.value)}
-                            placeholder={t('list.addItemPlaceholder')}
-                            className="flex-grow bg-background border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                        />
+                        <div className="relative flex-grow">
+                            <input
+                                type="text"
+                                value={newItemName}
+                                onChange={(e) => setNewItemName(e.target.value)}
+                                onKeyDown={suggestionNav.handleKeyDown}
+                                onFocus={suggestionNav.reset}
+                                onBlur={() => suggestionNav.dismiss()}
+                                autoComplete="off"
+                                placeholder={t('list.addItemPlaceholder')}
+                                className="w-full bg-background border border-gray-700 rounded-xl py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            />
+                            <KnownItemSuggestions
+                                suggestions={suggestionNav.visible ? suggestions : []}
+                                activeIndex={suggestionNav.activeIndex}
+                                onHover={suggestionNav.setActiveIndex}
+                                onSelect={selectSuggestion}
+                                categories={categories}
+                            />
+                        </div>
                         <select
                             value={newItemCategory}
                             onChange={(e) => {

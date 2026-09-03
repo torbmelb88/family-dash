@@ -1,10 +1,32 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Search, Plus, ChefHat, ClipboardPaste, Clock, Users, ListOrdered, ImageIcon, RefreshCw, Loader2 } from 'lucide-react';
 import { db, collection, addDoc } from '../services/backend';
 import { updateDinnerInArchive } from '../services/api';
-import { parseRecipeText } from '../utils/recipeParser';
+import { parseRecipeText, splitLeadingAmount, splitDescriptors } from '../utils/recipeParser';
+import { useKnownItems, matchKnownItems } from '../hooks/useKnownItems';
+import { useSuggestionNavigation } from '../hooks/useSuggestionNavigation';
+import KnownItemSuggestions from '../components/KnownItemSuggestions';
 import { fetchDinnerImages } from '../services/unsplash';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Splits an ingredient line being typed into the part to keep ("1 stor ") and the product name
+ * to look up ("l" → "Løk"). Amount, unit and size words stay in the prefix.
+ */
+function splitIngredientLine(line) {
+    const leading = splitLeadingAmount(line);
+    let prefix = leading.prefix;
+    let rest = leading.rest;
+    const split = splitDescriptors(rest);
+    if (split.descriptor) {
+        const idx = rest.lastIndexOf(split.name);
+        if (idx > 0) {
+            prefix += rest.slice(0, idx);
+            rest = rest.slice(idx);
+        }
+    }
+    return { prefix, rest };
+}
 
 export default function AddDinnerModal({ isOpen, onClose, onSelectDinner, familyId, dinnerArchive, dinnerToEdit }) {
     const { t } = useTranslation();
@@ -27,6 +49,44 @@ export default function AddDinnerModal({ isOpen, onClose, onSelectDinner, family
     // Paste tab state
     const [pasteText, setPasteText] = useState('');
     const [parsed, setParsed] = useState(null);
+
+    // Ingredient suggestions: match the product name on the line under the cursor against
+    // the family's known items, keeping any leading amount and size word ("1 stor ") as typed.
+    const ingredientsRef = useRef(null);
+    const [ingredientCursor, setIngredientCursor] = useState(0);
+    const [pendingCursor, setPendingCursor] = useState(null);
+    const knownItems = useKnownItems(isOpen ? familyId : null);
+    const currentLine = useMemo(() => {
+        const pos = Math.min(ingredientCursor, newIngredients.length);
+        const start = newIngredients.lastIndexOf('\n', pos - 1) + 1;
+        const newlineAfter = newIngredients.indexOf('\n', pos);
+        const end = newlineAfter === -1 ? newIngredients.length : newlineAfter;
+        const { prefix, rest } = splitIngredientLine(newIngredients.slice(start, end));
+        return { start, end, prefix, rest };
+    }, [newIngredients, ingredientCursor]);
+    const ingredientSuggestions = useMemo(() => matchKnownItems(knownItems, currentLine.rest), [knownItems, currentLine.rest]);
+    const ingredientNav = useSuggestionNavigation(ingredientSuggestions, currentLine.rest, selectIngredientSuggestion);
+
+    function selectIngredientSuggestion(item) {
+        // After an amount the name reads better in lower case ("400 g kyllingfilet"); keep names
+        // that are capitalised beyond the first letter (brands, acronyms) as they are.
+        const name = currentLine.prefix && !/^.[A-ZÆØÅ]/.test(item.name)
+            ? item.name.charAt(0).toLowerCase() + item.name.slice(1)
+            : item.name;
+        const newLine = currentLine.prefix + name;
+        setNewIngredients(newIngredients.slice(0, currentLine.start) + newLine + newIngredients.slice(currentLine.end));
+        ingredientNav.dismiss(splitIngredientLine(newLine).rest);
+        setPendingCursor(currentLine.start + newLine.length);
+    }
+
+    useEffect(() => {
+        if (pendingCursor === null || !ingredientsRef.current) return;
+        const el = ingredientsRef.current;
+        el.focus();
+        el.setSelectionRange(pendingCursor, pendingCursor);
+        setIngredientCursor(pendingCursor);
+        setPendingCursor(null);
+    }, [pendingCursor]);
 
     useEffect(() => {
         if (isOpen) {
@@ -345,12 +405,28 @@ export default function AddDinnerModal({ isOpen, onClose, onSelectDinner, family
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-1">{t('dinnerModal.labelIngredients')}</label>
-                                <textarea
-                                    value={newIngredients}
-                                    onChange={(e) => setNewIngredients(e.target.value)}
-                                    placeholder={t('dinnerModal.placeholderIngredients')}
-                                    className="w-full bg-background border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px]"
-                                />
+                                <div className="relative">
+                                    <textarea
+                                        ref={ingredientsRef}
+                                        value={newIngredients}
+                                        onChange={(e) => {
+                                            setNewIngredients(e.target.value);
+                                            setIngredientCursor(e.target.selectionStart);
+                                        }}
+                                        onSelect={(e) => setIngredientCursor(e.target.selectionStart)}
+                                        onKeyDown={ingredientNav.handleKeyDown}
+                                        onFocus={ingredientNav.reset}
+                                        onBlur={() => ingredientNav.dismiss()}
+                                        placeholder={t('dinnerModal.placeholderIngredients')}
+                                        className="w-full bg-background border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px]"
+                                    />
+                                    <KnownItemSuggestions
+                                        suggestions={ingredientNav.visible ? ingredientSuggestions : []}
+                                        activeIndex={ingredientNav.activeIndex}
+                                        onHover={ingredientNav.setActiveIndex}
+                                        onSelect={selectIngredientSuggestion}
+                                    />
+                                </div>
                             </div>
 
                             <div>

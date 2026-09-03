@@ -228,6 +228,12 @@ export function buildDemoDocs() {
         docs.push([fam(`shoppingListCategories/${id}`), { ...data, listId: null }]);
     });
 
+    // Category memory (known items) — what the app suggests while typing and the MCP server reads
+    [...shoppingItems, ...weekendItems].forEach(({ name, categoryId }) => {
+        if (!categoryId) return;
+        docs.push([fam(`categoryHistory/${name.toLowerCase()}`), { name, categoryId, updatedAt: addDays(today, -30) }]);
+    });
+
     docs.push([fam('storeProfiles/profil-narbutikken'), {
         name: 'Nærbutikken',
         listId: null,

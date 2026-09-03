@@ -11,7 +11,7 @@ Et delt dashboard for familien: planlegg ukens middager, hold handlelisten oppda
 - **Middagsplanlegging** — ukesvisning der middager legges til fra et gjenbrukbart arkiv. Lim inn en hel oppskrift som tekst, så parses rett, ingredienser, porsjoner, tid og fremgangsmåte automatisk, og et matchende bilde hentes fra Unsplash (norske retter oversettes til engelsk for bedre treff).
 - **Kokkemodus** — stegvis visning av oppskriften med ingrediensliste og timer, tilpasset et kjøkken med skitne fingre.
 - **Handleliste i sanntid** — flere lister, varer gruppert i kategorier, antall og avkryssing synkroniseres mellom alle familiemedlemmer via Firestore.
-- **Butikkprofiler** — definer rekkefølgen på kategoriene slik *din* butikk er organisert, og bruk butikkmodus for å gå gjennom listen hylle for hylle. Appen husker hvilken kategori en vare sist ble plassert i.
+- **Butikkprofiler** — definer rekkefølgen på kategoriene slik *din* butikk er organisert, og bruk butikkmodus for å gå gjennom listen hylle for hylle. Appen husker hvilken kategori en vare sist ble plassert i, og foreslår kjente varer mens du skriver i handlelista og i ingredienslista på en ny middag.
 - **Sjekklister** — felles gjøremål organisert i seksjoner.
 - **Familiedeling** — opprett en familie og inviter andre med en kode. Innlogging med e-post/passord eller Google.
 - **Flerspråklig** — norsk, engelsk, dansk, svensk, tysk, fransk, spansk og arabisk (med RTL-layout).
